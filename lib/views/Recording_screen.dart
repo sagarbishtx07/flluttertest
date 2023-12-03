@@ -6,17 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
-class RecprdingView extends StatefulWidget {
-  const RecprdingView({super.key});
+class RecordingView extends StatefulWidget {
+  const RecordingView({super.key});
 
   @override
-  State<RecprdingView> createState() => _RecprdingViewState();
+  State<RecordingView> createState() => _RecordingViewState();
 }
 
-class _RecprdingViewState extends State<RecprdingView> {
+class _RecordingViewState extends State<RecordingView> {
   AudioPlayer audioPlayer = AudioPlayer();
   AudioRecorder audioRecorder = AudioRecorder();
   bool _isRecording = false;
+  String? path;
   late String? _recording;
 
   @override
@@ -46,14 +47,14 @@ class _RecprdingViewState extends State<RecprdingView> {
         ),
 
       ),
-    )
+    );
   }
 
-  Future<void> startRecording() async{
+  Future<void> startRecording() async {
     bool hasPermissions = await AudioRecorder().hasPermission();
-    if(!hasPermissions){
+    if (!hasPermissions) {
       return;
-    }else {
+    } else {
       RecordConfig rc = const RecordConfig(
         encoder: AudioEncoder.aacLc,
         bitRate: 128000,
@@ -62,6 +63,7 @@ class _RecprdingViewState extends State<RecprdingView> {
       );
       Directory appDir = await getApplicationDocumentsDirectory();
       String audioFilePath = '${appDir.path}/recorded_audio.aac';
+      path = audioFilePath;
       await audioRecorder.start(rc, path: audioFilePath);
 
       setState(() {
@@ -70,16 +72,31 @@ class _RecprdingViewState extends State<RecprdingView> {
     }
   }
 
-  void stopRecording() async{
-String? recording = await audioRecorder.stop();
+  void stopRecording() async {
+    await audioRecorder.stop();
     setState(() {
-      _recording = _recording;
-      _isRecording=false;
-
+      _isRecording = false;
     });
   }
 
-  Future<void> playAudio(String s) async{
-  if(_)
+  Future<void> playAudio(String s) async {
+    try {
+      if (path != null && !_isRecording) {
+        await audioPlayer.play(
+          path! as Source,
+          volume: 1.0, // Adjust the volume if needed
+          balance: 0.0, // Adjust the balance if needed
+        );
+
+        print("Playback started successfully");
+      }
+    } catch (e) {
+      print("Error starting playback: $e");
+    }
+
+   /* audioPlayer.onPlayerCompletion.listen((event) {
+      // Handle completion (e.g., update UI)
+      print("Playback completed");
+    });*/
   }
 }
